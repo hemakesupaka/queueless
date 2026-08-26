@@ -111,7 +111,7 @@ The goal of QueueLess is to create a practical digital queue management solution
 
 GitHub: `https://github.com/hemakesupaka`
 
-LinkedIn: Add your LinkedIn profile link here
+LinkedIn: www.linkedin.com/in/hema-kesupaka-54a16434a
 
 ## 📄 License
 
