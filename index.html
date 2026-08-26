@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>H's Click | QueueLess</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- ==============================
+         NAVIGATION
+         ============================== -->
+
+    <header class="navbar">
+
+        <div class="logo">
+
+            <span class="logo-mark">
+                H
+            </span>
+
+            <span class="logo-text">
+                's Click
+            </span>
+
+        </div>
+
+
+        <nav>
+
+            <a href="#home">
+                Home
+            </a>
+
+            <a href="#how-it-works">
+                How It Works
+            </a>
+
+            <a href="#about">
+                About
+            </a>
+
+        </nav>
+
+
+        <!-- ADMIN BUTTON -->
+
+        <button
+            class="admin-btn"
+            id="adminBtn"
+        >
+            Admin
+        </button>
+
+    </header>
+
+
+
+    <main>
+
+
+        <!-- ==============================
+             HERO SECTION
+             ============================== -->
+
+        <section
+            class="hero"
+            id="home"
+        >
+
+            <div class="hero-content">
+
+                <p class="tagline">
+                    SMART QUEUE MANAGEMENT
+                </p>
+
+
+                <h1>
+                    Skip the wait.<br>
+
+                    <span>
+                        Join the queue.
+                    </span>
+                </h1>
+
+
+                <p class="hero-description">
+                    QueueLess helps you join a queue digitally,
+                    track your position, and spend less time waiting.
+                </p>
+
+
+                <button
+                    class="primary-btn"
+                    id="joinQueueBtn"
+                >
+                    Join a Queue
+                </button>
+
+
+
+                <!-- ==============================
+                     QUEUE MODAL
+                     ============================== -->
+
+                <div
+                    class="queue-modal"
+                    id="queueModal"
+                >
+
+                    <div class="modal-content">
+
+
+                        <!-- CLOSE MODAL -->
+
+                        <button
+                            class="close-btn"
+                            id="closeModal"
+                        >
+                            ×
+                        </button>
+
+
+
+                        <!-- ==============================
+                             QUEUE FORM
+                             ============================== -->
+
+                        <div id="queueFormContainer">
+
+                            <p class="tagline">
+                                JOIN A QUEUE
+                            </p>
+
+
+                            <h2>
+                                Choose your service
+                            </h2>
+
+
+                            <p class="modal-description">
+                                Enter your details and get
+                                your digital queue number.
+                            </p>
+
+
+
+                            <form id="queueForm">
+
+
+                                <!-- CUSTOMER NAME -->
+
+                                <label for="customerName">
+                                    Your Name
+                                </label>
+
+
+                                <input
+                                    type="text"
+                                    id="customerName"
+                                    placeholder="Enter your name"
+                                    required
+                                >
+
+
+
+                                <!-- BUSINESS -->
+
+                                <label for="business">
+                                    Choose Business
+                                </label>
+
+
+                                <select
+                                    id="business"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select a business
+                                    </option>
+
+                                    <option value="H's Clinic">
+                                        H's Clinic
+                                    </option>
+
+                                    <option value="City Salon">
+                                        City Salon
+                                    </option>
+
+                                    <option value="Quick Service Center">
+                                        Quick Service Center
+                                    </option>
+
+                                </select>
+
+
+
+                                <!-- SUBMIT -->
+
+                                <button
+                                    type="submit"
+                                    class="submit-btn"
+                                >
+                                    Get My Queue Number
+                                </button>
+
+                            </form>
+
+                        </div>
+
+
+
+                        <!-- ==============================
+                             QUEUE TICKET
+                             ============================== -->
+
+                        <div
+                            class="ticket"
+                            id="ticket"
+                        >
+
+                            <p class="tagline">
+                                YOU'RE IN THE QUEUE
+                            </p>
+
+
+                            <h2 id="ticketBusiness">
+                                H's Clinic
+                            </h2>
+
+
+                            <div
+                                class="ticket-number"
+                                id="ticketNumber"
+                            >
+                                A27
+                            </div>
+
+
+                            <p
+                                class="ticket-message"
+                                id="ticketMessage"
+                            >
+                                Welcome!
+                                Your place has been reserved.
+                            </p>
+
+
+
+                            <!-- TICKET DETAILS -->
+
+                            <div class="ticket-details">
+
+
+                                <div>
+
+                                    <span>
+                                        People Ahead
+                                    </span>
+
+                                    <strong id="peopleAhead">
+                                        4
+                                    </strong>
+
+                                </div>
+
+
+
+                                <div>
+
+                                    <span>
+                                        Estimated Wait
+                                    </span>
+
+                                    <strong id="waitTime">
+                                        20 min
+                                    </strong>
+
+                                </div>
+
+
+                            </div>
+
+
+
+                            <!-- ==============================
+                                 TICKET ACTIONS
+                                 ============================== -->
+
+                            <div class="ticket-actions">
+
+
+                                <!-- DONE BUTTON -->
+
+                                <button
+                                    class="close-ticket"
+                                    id="closeTicket"
+                                >
+                                    Done
+                                </button>
+
+
+                                <!-- LEAVE QUEUE BUTTON -->
+
+                                <button
+                                    class="cancel-ticket"
+                                    id="cancelTicket"
+                                >
+                                    Leave Queue
+                                </button>
+
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ==============================
+                 QUEUE PREVIEW CARD
+                 ============================== -->
+
+            <div class="queue-card">
+
+
+                <div class="card-header">
+
+                    <div>
+
+                        <p class="small-text">
+                            CURRENT QUEUE
+                        </p>
+
+                        <h2>
+                            H's Clinic
+                        </h2>
+
+                    </div>
+
+
+                    <span class="status">
+                        ● LIVE
+                    </span>
+
+                </div>
+
+
+
+                <div class="queue-number">
+
+                    <p>
+                        Your Position
+                    </p>
+
+                    <h3>
+                        A27
+                    </h3>
+
+                </div>
+
+
+
+                <div class="queue-info">
+
+
+                    <div>
+
+                        <span>
+                            People Ahead
+                        </span>
+
+                        <strong>
+                            4
+                        </strong>
+
+                    </div>
+
+
+
+                    <div>
+
+                        <span>
+                            Estimated Wait
+                        </span>
+
+                        <strong>
+                            20 min
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- ==============================
+             HOW IT WORKS
+             ============================== -->
+
+        <section
+            class="how-it-works"
+            id="how-it-works"
+        >
+
+            <div class="section-heading">
+
+                <p class="tagline">
+                    SIMPLE PROCESS
+                </p>
+
+
+                <h2>
+                    Waiting doesn't have<br>
+                    to mean standing.
+                </h2>
+
+            </div>
+
+
+
+            <div class="steps">
+
+
+                <div class="step">
+
+                    <span>
+                        01
+                    </span>
+
+                    <h3>
+                        Find a Business
+                    </h3>
+
+                    <p>
+                        Choose the business or service
+                        you want to visit.
+                    </p>
+
+                </div>
+
+
+
+                <div class="step">
+
+                    <span>
+                        02
+                    </span>
+
+                    <h3>
+                        Join the Queue
+                    </h3>
+
+                    <p>
+                        Enter your name and receive
+                        your digital queue number.
+                    </p>
+
+                </div>
+
+
+
+                <div class="step">
+
+                    <span>
+                        03
+                    </span>
+
+                    <h3>
+                        Track Your Turn
+                    </h3>
+
+                    <p>
+                        Follow your position and know
+                        when it's almost your turn.
+                    </p>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ==============================
+             ABOUT
+             ============================== -->
+
+        <section
+            class="about"
+            id="about"
+        >
+
+            <div>
+
+                <p class="tagline">
+                    WHY QUEUELESS?
+                </p>
+
+
+                <h2>
+                    More time living.<br>
+                    Less time waiting.
+                </h2>
+
+            </div>
+
+
+
+            <p>
+                QueueLess is designed to make everyday
+                waiting simpler by allowing customers to
+                join queues digitally and businesses to
+                manage them efficiently.
+            </p>
+
+
+        </section>
+
+
+
+        <!-- ==============================
+             ADMIN DASHBOARD
+             ============================== -->
+
+        <section
+            class="admin-dashboard"
+            id="adminDashboard"
+        >
+
+
+            <!-- ADMIN HEADER -->
+
+            <div class="admin-header">
+
+                <div>
+
+                    <p class="tagline">
+                        BUSINESS MANAGEMENT
+                    </p>
+
+
+                    <h2>
+                        Queue Dashboard
+                    </h2>
+
+
+                    <p class="admin-subtitle">
+                        Manage customers and control the queue.
+                    </p>
+
+                </div>
+
+
+                <button
+                    class="admin-close"
+                    id="adminClose"
+                >
+                    Back to Website
+                </button>
+
+            </div>
+
+
+
+            <!-- ==============================
+                 QUEUE SUMMARY
+                 ============================== -->
+
+            <div class="admin-stats">
+
+
+                <div class="admin-stat">
+
+                    <span>
+                        WAITING
+                    </span>
+
+                    <strong id="waitingCount">
+                        0
+                    </strong>
+
+                </div>
+
+
+
+                <div class="admin-stat">
+
+                    <span>
+                        NOW SERVING
+                    </span>
+
+                    <strong id="servingNumber">
+                        —
+                    </strong>
+
+                </div>
+
+
+
+                <div class="admin-stat">
+
+                    <span>
+                        COMPLETED
+                    </span>
+
+                    <strong id="completedCount">
+                        0
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- ==============================
+                 QUEUE CONTROLS
+                 ============================== -->
+
+            <div class="admin-controls">
+
+
+                <div>
+
+                    <h3>
+                        H's Clinic
+                    </h3>
+
+
+                    <p>
+                        Manage today's customer queue
+                    </p>
+
+                </div>
+
+
+                <button
+                    class="call-next-btn"
+                    id="callNextBtn"
+                >
+                    Call Next
+                </button>
+
+
+            </div>
+
+
+
+            <!-- ==============================
+                 CUSTOMER LIST
+                 ============================== -->
+
+            <div class="customer-list">
+
+
+                <div class="customer-list-header">
+
+                    <span>
+                        QUEUE
+                    </span>
+
+
+                    <span>
+                        CUSTOMER
+                    </span>
+
+
+                    <span>
+                        STATUS
+                    </span>
+
+                </div>
+
+
+
+                <div
+                    id="adminQueueList"
+                    class="admin-queue-list"
+                >
+
+                    <p class="empty-queue">
+                        No customers in the queue yet.
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+
+    </main>
+
+
+
+    <!-- ==============================
+         FOOTER
+         ============================== -->
+
+    <footer>
+
+        <p>
+            © 2026 H's Click · QueueLess.
+            Built as a real-world web project.
+        </p>
+
+    </footer>
+
+
+
+    <!-- JAVASCRIPT -->
+
+    <script src="script.js"></script>
+
+
+</body>
+
+</html>
