@@ -1,118 +1,197 @@
-# QueueLess 🚀
+QueueLess 🚀
 
-### Smart Queue Management System
+Smart Queue Management System
 
-QueueLess is a web-based queue management system designed to reduce physical waiting time by allowing users to join and monitor a queue digitally.
+QueueLess is a web-based smart queue management system that allows customers to join a queue digitally, track their queue position, estimated waiting time, and current status. Administrators can manage the queue through an admin dashboard.
 
-The project provides a simple and modern interface for users to view their queue position, the number of people ahead, and the estimated waiting time.
+🎯 Problem Statement
 
-## 🎯 Problem Statement
+Traditional queue systems require people to physically wait in line without knowing their exact position or how long they may need to wait.
 
-Traditional queue systems often require people to physically wait in line without knowing their exact position or how long they may need to wait.
+This can lead to:
 
-This can result in:
+• Long waiting times
+• Crowded waiting areas
+• Lack of queue information
+• Poor user experience
 
-* Long waiting times
-* Crowded waiting areas
-* Lack of information about queue progress
-* Poor user experience
 
-## 💡 Our Solution
+💡 Solution
 
-QueueLess provides a digital interface that allows users to interact with a queue system without continuously waiting in a physical line.
+QueueLess provides a digital queue management system where customers can join a queue and monitor their queue status without continuously waiting in a physical line.
 
-Users can view important queue information such as their current position, people ahead, and estimated waiting time.
+Administrators can manage customers, call the next customer, and complete queue requests through the admin dashboard.
 
-## ✨ Current Features
 
-* 🎫 **Join a Queue** — Users can access the queue through the application.
-* 🔢 **Queue Position** — Displays the user's current position in the queue.
-* 👥 **People Ahead** — Shows how many people are ahead of the user.
-* ⏱️ **Estimated Wait Time** — Displays an estimated waiting time.
-* 🟢 **Live Queue Status** — Provides a visual indication of the current queue status.
-* 📱 **Clean User Interface** — Simple and easy-to-understand design.
-* 👨‍💼 **Admin Interface** — Provides an entry point for queue administration.
-* 📖 **How It Works** — Explains the queue management process.
-* ℹ️ **About Section** — Provides information about QueueLess.
+✨ Features
 
-## 🖥️ Current Version
+👤 Customer Features
 
-The current version of QueueLess focuses on the **frontend user interface and user experience**.
+• Join a queue digitally
+• Automatic queue number generation
+• View people ahead
+• Estimated waiting time
+• View current queue status
+• Leave the queue
 
-The interface demonstrates how a digital queue management system can present queue information to users in a clear and accessible way.
+👨‍💼 Admin Features
 
-## ⚙️ How It Works
+• Admin login
+• Admin dashboard
+• View waiting customers
+• Call the next customer
+• Mark customers as completed
+• Monitor queue status
+• Manage queues for different businesses
+• Admin logout
 
-```text
-User
-  ↓
-Open QueueLess
-  ↓
-Join a Queue
-  ↓
-Receive Queue Position
-  ↓
+⚙️ System Features
+
+• REST API
+• SQLite database
+• Automatic queue status updates
+• Business-specific queues
+• Session-based admin authentication
+• Password hashing
+
+
+🏗️ System Architecture
+
+Customer / Admin
+       ↓
+HTML + CSS + JavaScript
+       ↓
+Flask REST API
+       ↓
+SQLite Database
+
+
+🔄 How It Works
+
+Customer
+   ↓
+Select Business
+   ↓
+Join Queue
+   ↓
+Receive Queue Number
+   ↓
 View People Ahead
-  ↓
+   ↓
 View Estimated Waiting Time
-  ↓
+   ↓
 Monitor Queue Status
-```
+   ↓
+Admin Calls Next Customer
+   ↓
+Serving
+   ↓
+Completed
 
-## 🛠️ Technologies
 
-### Frontend
+🛠️ Technologies Used
 
-* HTML
-* CSS
-* JavaScript
+Frontend
 
-> Technologies will be updated as additional parts of the application are developed.
+• HTML
+• CSS
+• JavaScript
 
-## 📸 Application Preview
+Backend
 
-### Home Page
+• Python
+• Flask
+• Flask-CORS
 
-The QueueLess home page provides users with an overview of the queue and displays their current queue information.
+Database
 
-The interface includes:
+• SQLite
 
-* Current queue
-* Queue position
-* People ahead
-* Estimated waiting time
-* Live status
-* Join Queue option
+Authentication
 
-## 🔮 Future Enhancements
+• Flask Sessions
+• Werkzeug Password Hashing
 
-The current frontend is the foundation for a complete queue management application.
 
-Planned improvements include:
+📁 Project Structure
 
-* 🔐 User authentication
-* 🎫 Functional digital queue joining
-* 🔄 Real-time queue updates
-* ⏱️ Dynamic waiting-time calculation
-* 🔔 Queue notifications
-* 👨‍💼 Complete admin dashboard
-* 🗄️ Database integration
-* ⚙️ Backend API
-* 📊 Queue analytics
-* 📱 Mobile-friendly improvements
+QueueLess/
+│
+├── index.html
+├── style.css
+├── script.js
+├── README.md
+├── .gitignore
+│
+└── backend/
+    ├── app.py
+    ├── database.py
+    └── requirements.txt
 
-## 🎯 Project Goal
 
-The goal of QueueLess is to create a practical digital queue management solution that helps users spend less time physically waiting and provides better visibility into queue progress.
+▶️ How to Run
 
-## 👩‍💻 Author
+1. Clone the Repository
 
-**Hema Kesupaka**
+git clone https://github.com/hemakesupaka/queueless.git
 
-GitHub: `https://github.com/hemakesupaka`
+2. Open the Project
 
-LinkedIn: https://www.linkedin.com/in/hema-kesupaka
+cd queueless
 
-## 📄 License
+3. Install Backend Dependencies
 
-This project is developed for educational and portfolio purposes.
+cd backend
+pip install -r requirements.txt
+
+4. Create the Database
+
+python database.py
+
+5. Start the Flask Backend
+
+python app.py
+
+The backend will run at:
+
+http://127.0.0.1:5000
+
+6. Run the Frontend
+
+Open index.html using VS Code Live Server.
+
+
+🔐 Demo Admin Login
+
+Username: admin
+Password: admin123
+
+This login is intended for local/demo use only.
+
+
+📸 Screenshots
+
+Screenshots of the application will be added here.
+
+
+🔮 Future Enhancements
+
+• SMS queue notifications
+• Email notifications
+• QR-based queue joining
+• Online appointment booking
+• Queue analytics
+• Cloud deployment
+• Mobile application
+
+
+🎯 Project Goal
+
+The goal of QueueLess is to provide a simple and practical digital queue management solution that reduces physical waiting time and gives customers better visibility into queue progress.
+
+
+👩‍💻 Author
+
+Hema Kesupaka
+
+GitHub: https://github.com/hemakesupaka
