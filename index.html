@@ -68,6 +68,104 @@
             Admin
         </button>
 
+
+        <!-- ==============================
+             ADMIN LOGIN MODAL
+             ============================== -->
+
+        <div
+            class="admin-login-modal"
+            id="adminLoginModal"
+        >
+
+            <div class="admin-login-box">
+
+
+                <!-- CLOSE LOGIN -->
+
+                <button
+                    class="close-btn"
+                    id="closeAdminLogin"
+                >
+                    ×
+                </button>
+
+
+                <p class="tagline">
+                    ADMIN ACCESS
+                </p>
+
+
+                <h2>
+                    Admin Login
+                </h2>
+
+
+                <p class="modal-description">
+                    Login to manage the QueueLess customer queue.
+                </p>
+
+
+                <!-- ADMIN LOGIN FORM -->
+
+                <form id="adminLoginForm">
+
+
+                    <!-- USERNAME -->
+
+                    <label for="adminUsername">
+                        Username
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="adminUsername"
+                        placeholder="Enter username"
+                        required
+                    >
+
+
+                    <!-- PASSWORD -->
+
+                    <label for="adminPassword">
+                        Password
+                    </label>
+
+
+                    <input
+                        type="password"
+                        id="adminPassword"
+                        placeholder="Enter password"
+                        required
+                    >
+
+
+                    <!-- LOGIN ERROR -->
+
+                    <p
+                        id="adminLoginError"
+                        class="admin-login-error"
+                    ></p>
+
+
+                    <!-- LOGIN BUTTON -->
+
+                    <button
+                        type="submit"
+                        class="submit-btn"
+                    >
+                        Login
+                    </button>
+
+
+                </form>
+
+
+            </div>
+
+        </div>
+
     </header>
 
 
@@ -583,12 +681,32 @@
                 </div>
 
 
-                <button
-                    class="admin-close"
-                    id="adminClose"
-                >
-                    Back to Website
-                </button>
+                <!-- ADMIN HEADER BUTTONS -->
+
+                <div class="admin-header-actions">
+
+
+                    <!-- LOGOUT -->
+
+                    <button
+                        class="admin-logout"
+                        id="adminLogout"
+                    >
+                        Logout
+                    </button>
+
+
+                    <!-- BACK TO WEBSITE -->
+
+                    <button
+                        class="admin-close"
+                        id="adminClose"
+                    >
+                        Back to Website
+                    </button>
+
+
+                </div>
 
             </div>
 
