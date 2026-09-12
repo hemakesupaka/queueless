@@ -5,6 +5,13 @@
 
 
 // ============================================================
+// BACKEND URL
+// ============================================================
+
+const API_URL = "http://127.0.0.1:5000";
+
+
+// ============================================================
 // GET HTML ELEMENTS
 // ============================================================
 
@@ -22,6 +29,7 @@ const cancelTicket = document.querySelector("#cancelTicket");
 const adminButton = document.querySelector("#adminBtn");
 const adminDashboard = document.querySelector("#adminDashboard");
 const adminClose = document.querySelector("#adminClose");
+const adminLogout = document.querySelector("#adminLogout");
 
 const callNextButton = document.querySelector("#callNextBtn");
 
@@ -33,20 +41,71 @@ const adminQueueList = document.querySelector("#adminQueueList");
 
 
 // ============================================================
+// ADMIN LOGIN ELEMENTS
+// ============================================================
+
+const adminLoginModal =
+    document.querySelector("#adminLoginModal");
+
+const adminLoginForm =
+    document.querySelector("#adminLoginForm");
+
+const closeAdminLogin =
+    document.querySelector("#closeAdminLogin");
+
+const adminLoginError =
+    document.querySelector("#adminLoginError");
+
+
+// ============================================================
 // CURRENT CUSTOMER
 // ============================================================
 
 let currentCustomerId =
-    Number(localStorage.getItem("queuelessCurrentCustomer")) || null;
+    Number(
+        localStorage.getItem("queuelessCurrentCustomer")
+    ) || null;
 
 
 // ============================================================
-// LOAD QUEUE
+// LOCAL QUEUE
 // ============================================================
 
-let queue = JSON.parse(
-    localStorage.getItem("queuelessQueue")
-) || [];
+let queue =
+    JSON.parse(
+        localStorage.getItem("queuelessQueue")
+    ) || [];
+
+
+// ============================================================
+// SELECTED ADMIN BUSINESS
+// ============================================================
+
+let selectedBusiness =
+    localStorage.getItem(
+        "queuelessAdminBusiness"
+    ) || "H's Clinic";
+
+
+// ============================================================
+// AVAILABLE BUSINESSES
+// ============================================================
+
+const availableBusinesses = [
+    "H's Clinic",
+    "ABC Bank",
+    "City Salon"
+];
+
+
+// ============================================================
+// ADMIN LOGIN STATE
+// ============================================================
+
+let isAdminLoggedIn =
+    sessionStorage.getItem(
+        "queuelessAdminLoggedIn"
+    ) === "true";
 
 
 // ============================================================
@@ -89,55 +148,13 @@ function getCurrentCustomer() {
         return null;
     }
 
-    return queue.find(function (person) {
+    return (
+        queue.find(function (person) {
 
-        return person.id === currentCustomerId;
+            return person.id === currentCustomerId;
 
-    }) || null;
-
-}
-
-
-// ============================================================
-// CREATE QUEUE NUMBER
-// ============================================================
-
-function createQueueNumber() {
-
-    const numbers = queue
-
-        .map(function (person) {
-
-            if (!person.queueNumber) {
-                return 0;
-            }
-
-            return parseInt(
-                person.queueNumber.replace("A", "")
-            );
-
-        })
-
-        .filter(function (number) {
-
-            return !isNaN(number);
-
-        });
-
-
-    if (numbers.length === 0) {
-
-        return "A01";
-
-    }
-
-
-    const highestNumber =
-        Math.max(...numbers);
-
-
-    return "A" +
-        String(highestNumber + 1).padStart(2, "0");
+        }) || null
+    );
 
 }
 
@@ -152,34 +169,26 @@ function getPeopleAhead(customer) {
         return 0;
     }
 
-
-    if (customer.status === "serving") {
+    if (
+        customer.status === "serving" ||
+        customer.status === "completed" ||
+        customer.status === "left"
+    ) {
         return 0;
     }
 
+    const peopleAhead =
+        queue.filter(function (person) {
 
-    if (customer.status === "completed") {
-        return 0;
-    }
+            return (
+                person.business === customer.business &&
+                person.status === "waiting" &&
+                person.id !== customer.id &&
+                new Date(person.joinedAt) <
+                    new Date(customer.joinedAt)
+            );
 
-
-    const peopleAhead = queue.filter(function (person) {
-
-        return (
-
-            person.business === customer.business &&
-
-            person.status === "waiting" &&
-
-            person.id !== customer.id &&
-
-            new Date(person.joinedAt) <
-            new Date(customer.joinedAt)
-
-        );
-
-    });
-
+        });
 
     return peopleAhead.length;
 
@@ -195,7 +204,6 @@ function getWaitTime(customer) {
     const peopleAhead =
         getPeopleAhead(customer);
 
-
     return peopleAhead * 5;
 
 }
@@ -210,11 +218,9 @@ function updateCustomerTicket() {
     const customer =
         getCurrentCustomer();
 
-
     if (!customer) {
         return;
     }
-
 
     const ticketBusiness =
         document.querySelector("#ticketBusiness");
@@ -231,38 +237,49 @@ function updateCustomerTicket() {
     const waitTimeElement =
         document.querySelector("#waitTime");
 
-
-    if (!ticketBusiness) {
+    if (
+        !ticketBusiness ||
+        !ticketNumber ||
+        !ticketMessage ||
+        !peopleAheadElement ||
+        !waitTimeElement
+    ) {
         return;
     }
 
+
+    // Business
 
     ticketBusiness.textContent =
         customer.business;
 
 
+    // Queue number
+
     ticketNumber.textContent =
         customer.queueNumber;
 
 
+    // People ahead
+
     const peopleAhead =
         getPeopleAhead(customer);
-
-
-    const waitTime =
-        getWaitTime(customer);
-
 
     peopleAheadElement.textContent =
         peopleAhead;
 
+
+    // Estimated wait
+
+    const waitTime =
+        getWaitTime(customer);
 
     waitTimeElement.textContent =
         `${waitTime} min`;
 
 
     // ========================================================
-    // UPDATE MESSAGE BASED ON STATUS
+    // STATUS MESSAGE
     // ========================================================
 
     if (customer.status === "waiting") {
@@ -272,7 +289,6 @@ function updateCustomerTicket() {
 
     }
 
-
     else if (customer.status === "serving") {
 
         ticketMessage.textContent =
@@ -280,11 +296,17 @@ function updateCustomerTicket() {
 
     }
 
-
     else if (customer.status === "completed") {
 
         ticketMessage.textContent =
             `Thank you ${customer.name}! Your service has been completed.`;
+
+    }
+
+    else if (customer.status === "left") {
+
+        ticketMessage.textContent =
+            `You have left the queue, ${customer.name}.`;
 
     }
 
@@ -324,9 +346,7 @@ if (closeModal) {
         "click",
         function () {
 
-            queueModal.classList.remove(
-                "active"
-            );
+            queueModal.classList.remove("active");
 
         }
     );
@@ -335,7 +355,7 @@ if (closeModal) {
 
 
 // ============================================================
-// CLOSE MODAL WHEN CLICKING OUTSIDE
+// CLOSE QUEUE MODAL OUTSIDE CLICK
 // ============================================================
 
 if (queueModal) {
@@ -346,9 +366,7 @@ if (queueModal) {
 
             if (event.target === queueModal) {
 
-                queueModal.classList.remove(
-                    "active"
-                );
+                queueModal.classList.remove("active");
 
             }
 
@@ -366,14 +384,10 @@ if (queueForm) {
 
     queueForm.addEventListener(
         "submit",
-        function (event) {
+        async function (event) {
 
             event.preventDefault();
 
-
-            // ==================================================
-            // GET CUSTOMER NAME
-            // ==================================================
 
             const customerName =
                 document
@@ -382,19 +396,11 @@ if (queueForm) {
                     .trim();
 
 
-            // ==================================================
-            // GET BUSINESS
-            // ==================================================
-
             const business =
                 document
                     .querySelector("#business")
                     .value;
 
-
-            // ==================================================
-            // VALIDATE
-            // ==================================================
 
             if (!customerName || !business) {
 
@@ -403,139 +409,227 @@ if (queueForm) {
                 );
 
                 return;
-
             }
 
 
-            // ==================================================
-            // CREATE QUEUE NUMBER
-            // ==================================================
+            try {
 
-            const queueNumber =
-                createQueueNumber();
+                const response =
+                    await fetch(
+                        `${API_URL}/api/queue`,
+                        {
+                            method: "POST",
 
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
 
-            // ==================================================
-            // CREATE CUSTOMER
-            // ==================================================
+                            body: JSON.stringify({
 
-            const customer = {
+                                name:
+                                    customerName,
 
-                id: Date.now(),
+                                business:
+                                    business
 
-                name: customerName,
-
-                business: business,
-
-                queueNumber: queueNumber,
-
-                status: "waiting",
-
-                joinedAt:
-                    new Date().toISOString()
-
-            };
+                            })
+                        }
+                    );
 
 
-            // ==================================================
-            // ADD TO QUEUE
-            // ==================================================
-
-            queue.push(customer);
+                const data =
+                    await response.json();
 
 
-            // ==================================================
-            // SAVE
-            // ==================================================
+                if (!response.ok) {
 
-            saveQueue();
+                    alert(
+                        data.error ||
+                        "Unable to join the queue."
+                    );
 
-
-            // ==================================================
-            // REMEMBER CUSTOMER
-            // ==================================================
-
-            saveCurrentCustomer(
-                customer.id
-            );
+                    return;
+                }
 
 
-            // ==================================================
-            // CALCULATE POSITION
-            // ==================================================
-
-            const peopleAhead =
-                getPeopleAhead(customer);
+                console.log(
+                    "Backend response:",
+                    data
+                );
 
 
-            const waitTime =
-                getWaitTime(customer);
+                // ==================================================
+                // CREATE CUSTOMER OBJECT
+                // ==================================================
+
+                const customer = {
+
+                    id:
+                        data.id,
+
+                    name:
+                        data.name,
+
+                    business:
+                        data.business,
+
+                    queueNumber:
+                        data.queue_number_text ||
+                        (
+                            "A" +
+                            String(
+                                data.queue_number
+                            ).padStart(2, "0")
+                        ),
+
+                    status:
+                        data.status || "waiting",
+
+                    joinedAt:
+                        data.joined_at ||
+                        new Date().toISOString()
+
+                };
 
 
-            // ==================================================
-            // SHOW TICKET
-            // ==================================================
+                // ==================================================
+                // LOAD LATEST QUEUE
+                // ==================================================
 
-            document.querySelector(
-                "#ticketBusiness"
-            ).textContent =
-                business;
+                await loadQueueFromBackend();
 
 
-            document.querySelector(
-                "#ticketNumber"
-            ).textContent =
-                queueNumber;
+                // ==================================================
+                // SAVE CURRENT CUSTOMER
+                // ==================================================
+
+                saveCurrentCustomer(
+                    customer.id
+                );
 
 
-            document.querySelector(
-                "#ticketMessage"
-            ).textContent =
-                `Welcome ${customerName}! Your place has been reserved.`;
+                updateCustomerTicket();
 
 
-            document.querySelector(
-                "#peopleAhead"
-            ).textContent =
-                peopleAhead;
+                // ==================================================
+                // SHOW TICKET
+                // ==================================================
+
+                queueFormContainer.style.display =
+                    "none";
+
+                ticket.classList.add("active");
 
 
-            document.querySelector(
-                "#waitTime"
-            ).textContent =
-                `${waitTime} min`;
+                queueForm.reset();
 
 
-            // ==================================================
-            // HIDE FORM
-            // ==================================================
+                alert(
+                    `Successfully joined the queue! Your ticket number is ${customer.queueNumber}.`
+                );
 
-            queueFormContainer.style.display =
-                "none";
+            }
 
+            catch (error) {
 
-            // ==================================================
-            // SHOW TICKET
-            // ==================================================
+                console.error(
+                    "Queue API Error:",
+                    error
+                );
 
-            ticket.classList.add("active");
+                alert(
+                    "Unable to connect to QueueLess server. Please make sure Flask is running."
+                );
 
-
-            // ==================================================
-            // RESET FORM
-            // ==================================================
-
-            queueForm.reset();
-
-
-            // ==================================================
-            // UPDATE ADMIN
-            // ==================================================
-
-            updateAdminDashboard();
+            }
 
         }
     );
+
+}
+
+
+// ============================================================
+// LOAD QUEUE FROM BACKEND
+// ============================================================
+
+async function loadQueueFromBackend() {
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/api/queue`
+            );
+
+
+        if (!response.ok) {
+
+            console.error(
+                "Unable to load queue from backend."
+            );
+
+            return;
+        }
+
+
+        const backendQueue =
+            await response.json();
+
+
+        queue =
+            backendQueue.map(function (customer) {
+
+                return {
+
+                    id:
+                        customer.id,
+
+                    name:
+                        customer.name,
+
+                    business:
+                        customer.business,
+
+                    queueNumber:
+                        customer.queue_number_text ||
+                        (
+                            "A" +
+                            String(
+                                customer.queue_number
+                            ).padStart(2, "0")
+                        ),
+
+                    status:
+                        customer.status,
+
+                    joinedAt:
+                        customer.joined_at
+
+                };
+
+            });
+
+
+        saveQueue();
+
+
+        updateAdminDashboard();
+
+
+        updateCustomerTicket();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Backend connection error:",
+            error
+        );
+
+    }
 
 }
 
@@ -550,9 +644,7 @@ if (closeTicket) {
         "click",
         function () {
 
-            queueModal.classList.remove(
-                "active"
-            );
+            queueModal.classList.remove("active");
 
         }
     );
@@ -568,15 +660,11 @@ if (cancelTicket) {
 
     cancelTicket.addEventListener(
         "click",
-        function () {
+        async function () {
 
             const customer =
                 getCurrentCustomer();
 
-
-            // ==================================================
-            // NO CURRENT CUSTOMER
-            // ==================================================
 
             if (!customer) {
 
@@ -585,13 +673,8 @@ if (cancelTicket) {
                 );
 
                 return;
-
             }
 
-
-            // ==================================================
-            // DO NOT ALLOW LEAVING AFTER SERVICE IS COMPLETED
-            // ==================================================
 
             if (customer.status === "completed") {
 
@@ -600,13 +683,8 @@ if (cancelTicket) {
                 );
 
                 return;
-
             }
 
-
-            // ==================================================
-            // DO NOT ALLOW LEAVING WHILE BEING SERVED
-            // ==================================================
 
             if (customer.status === "serving") {
 
@@ -615,13 +693,8 @@ if (cancelTicket) {
                 );
 
                 return;
-
             }
 
-
-            // ==================================================
-            // CONFIRM
-            // ==================================================
 
             const confirmLeave =
                 confirm(
@@ -634,81 +707,455 @@ if (cancelTicket) {
             }
 
 
-            // ==================================================
-            // REMOVE CUSTOMER
-            // ==================================================
+            try {
 
-            queue =
-                queue.filter(function (person) {
-
-                    return person.id !== customer.id;
-
-                });
-
-
-            // ==================================================
-            // SAVE UPDATED QUEUE
-            // ==================================================
-
-            saveQueue();
+                const response =
+                    await fetch(
+                        `${API_URL}/api/queue/${customer.id}/leave`,
+                        {
+                            method: "POST"
+                        }
+                    );
 
 
-            // ==================================================
-            // CLEAR CURRENT CUSTOMER
-            // ==================================================
-
-            currentCustomerId = null;
-
-            localStorage.removeItem(
-                "queuelessCurrentCustomer"
-            );
+                const data =
+                    await response.json();
 
 
-            // ==================================================
-            // CLOSE MODAL
-            // ==================================================
+                if (!response.ok) {
 
-            queueModal.classList.remove(
-                "active"
-            );
+                    alert(
+                        data.error ||
+                        "Unable to leave queue."
+                    );
 
-
-            // ==================================================
-            // RESET FORM
-            // ==================================================
-
-            queueFormContainer.style.display =
-                "block";
+                    return;
+                }
 
 
-            ticket.classList.remove(
-                "active"
-            );
+                currentCustomerId =
+                    null;
 
 
-            // ==================================================
-            // RESET FORM FIELDS
-            // ==================================================
+                localStorage.removeItem(
+                    "queuelessCurrentCustomer"
+                );
 
-            if (queueForm) {
-                queueForm.reset();
+
+                queueModal.classList.remove(
+                    "active"
+                );
+
+
+                queueFormContainer.style.display =
+                    "block";
+
+
+                ticket.classList.remove(
+                    "active"
+                );
+
+
+                if (queueForm) {
+                    queueForm.reset();
+                }
+
+
+                await loadQueueFromBackend();
+
+
+                alert(
+                    "You have left the queue."
+                );
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Leave Queue Error:",
+                    error
+                );
+
+                alert(
+                    "Unable to connect to QueueLess server."
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+// ============================================================
+// CREATE ADMIN BUSINESS SELECTOR
+// ============================================================
+
+function createBusinessSelector() {
+
+    if (!adminDashboard) {
+        return;
+    }
+
+
+    if (
+        document.querySelector(
+            "#adminBusinessSelector"
+        )
+    ) {
+        return;
+    }
+
+
+    const selectorContainer =
+        document.createElement("div");
+
+
+    selectorContainer.id =
+        "adminBusinessSelector";
+
+
+    selectorContainer.style.marginBottom =
+        "20px";
+
+
+    const label =
+        document.createElement("label");
+
+
+    label.textContent =
+        "Select Business: ";
+
+
+    label.style.fontWeight =
+        "600";
+
+
+    const select =
+        document.createElement("select");
+
+
+    select.id =
+        "adminBusinessSelect";
+
+
+    select.style.padding =
+        "8px 12px";
+
+
+    select.style.marginLeft =
+        "8px";
+
+
+    select.style.borderRadius =
+        "6px";
+
+
+    availableBusinesses.forEach(
+        function (business) {
+
+            const option =
+                document.createElement("option");
+
+
+            option.value =
+                business;
+
+
+            option.textContent =
+                business;
+
+
+            if (
+                business ===
+                selectedBusiness
+            ) {
+
+                option.selected =
+                    true;
+
             }
 
 
-            // ==================================================
-            // UPDATE ADMIN DASHBOARD
-            // ==================================================
+            select.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    select.addEventListener(
+        "change",
+        function () {
+
+            selectedBusiness =
+                select.value;
+
+
+            localStorage.setItem(
+                "queuelessAdminBusiness",
+                selectedBusiness
+            );
+
 
             updateAdminDashboard();
 
+        }
+    );
 
-            // ==================================================
-            // MESSAGE
-            // ==================================================
 
-            alert(
-                "You have left the queue."
+    selectorContainer.appendChild(
+        label
+    );
+
+
+    selectorContainer.appendChild(
+        select
+    );
+
+
+    adminDashboard.insertBefore(
+        selectorContainer,
+        adminDashboard.firstChild
+    );
+
+}
+
+
+// ============================================================
+// SHOW ADMIN LOGIN MODAL
+// ============================================================
+
+function showAdminLogin() {
+
+    if (!adminLoginModal) {
+
+        alert(
+            "Admin login window is not available."
+        );
+
+        return;
+    }
+
+
+    if (adminLoginError) {
+
+        adminLoginError.textContent =
+            "";
+
+    }
+
+
+    if (adminLoginForm) {
+
+        adminLoginForm.reset();
+
+    }
+
+
+    adminLoginModal.classList.add(
+        "active"
+    );
+
+}
+
+
+// ============================================================
+// CLOSE ADMIN LOGIN MODAL
+// ============================================================
+
+if (closeAdminLogin) {
+
+    closeAdminLogin.addEventListener(
+        "click",
+        function () {
+
+            adminLoginModal.classList.remove(
+                "active"
             );
+
+        }
+    );
+
+}
+
+
+// ============================================================
+// CLOSE ADMIN LOGIN OUTSIDE CLICK
+// ============================================================
+
+if (adminLoginModal) {
+
+    adminLoginModal.addEventListener(
+        "click",
+        function (event) {
+
+            if (
+                event.target ===
+                adminLoginModal
+            ) {
+
+                adminLoginModal.classList.remove(
+                    "active"
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+// ============================================================
+// REAL ADMIN LOGIN
+// ============================================================
+
+if (adminLoginForm) {
+
+    adminLoginForm.addEventListener(
+        "submit",
+        async function (event) {
+
+            event.preventDefault();
+
+
+            const username =
+                document
+                    .querySelector("#adminUsername")
+                    .value
+                    .trim();
+
+
+            const password =
+                document
+                    .querySelector("#adminPassword")
+                    .value;
+
+
+            if (adminLoginError) {
+
+                adminLoginError.textContent =
+                    "";
+
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}/api/admin/login`,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            credentials:
+                                "include",
+
+                            body: JSON.stringify({
+
+                                username:
+                                    username,
+
+                                password:
+                                    password
+
+                            })
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    if (adminLoginError) {
+
+                        adminLoginError.textContent =
+                            data.error ||
+                            "Invalid username or password.";
+
+                    }
+
+                    return;
+                }
+
+
+                // ==================================================
+                // LOGIN SUCCESS
+                // ==================================================
+
+                isAdminLoggedIn =
+                    true;
+
+
+                sessionStorage.setItem(
+                    "queuelessAdminLoggedIn",
+                    "true"
+                );
+
+
+                adminLoginModal.classList.remove(
+                    "active"
+                );
+
+
+                adminDashboard.classList.add(
+                    "active"
+                );
+
+
+                createBusinessSelector();
+
+
+                await loadQueueFromBackend();
+
+
+                updateAdminDashboard();
+
+
+                setTimeout(function () {
+
+                    window.scrollTo({
+
+                        top:
+                            adminDashboard.offsetTop,
+
+                        behavior:
+                            "smooth"
+
+                    });
+
+                }, 50);
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Admin Login Error:",
+                    error
+                );
+
+
+                if (adminLoginError) {
+
+                    adminLoginError.textContent =
+                        "Unable to connect to the server. Make sure Flask is running.";
+
+                }
+
+            }
 
         }
     );
@@ -724,11 +1171,90 @@ if (adminButton) {
 
     adminButton.addEventListener(
         "click",
-        function () {
+        async function () {
+
+            // ==================================================
+            // CHECK BACKEND SESSION
+            // ==================================================
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}/api/admin/check`,
+                        {
+                            method: "GET",
+                            credentials: "include"
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (response.ok && data.logged_in) {
+
+                    isAdminLoggedIn =
+                        true;
+
+
+                    sessionStorage.setItem(
+                        "queuelessAdminLoggedIn",
+                        "true"
+                    );
+
+                }
+
+                else {
+
+                    isAdminLoggedIn =
+                        false;
+
+                    sessionStorage.removeItem(
+                        "queuelessAdminLoggedIn"
+                    );
+
+                }
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Admin session check error:",
+                    error
+                );
+
+            }
+
+
+            // ==================================================
+            // NOT LOGGED IN
+            // ==================================================
+
+            if (!isAdminLoggedIn) {
+
+                showAdminLogin();
+
+                return;
+
+            }
+
+
+            // ==================================================
+            // OPEN DASHBOARD
+            // ==================================================
 
             adminDashboard.classList.add(
                 "active"
             );
+
+
+            createBusinessSelector();
+
+
+            await loadQueueFromBackend();
 
 
             updateAdminDashboard();
@@ -755,27 +1281,97 @@ if (adminButton) {
 
 
 // ============================================================
-// CLOSE ADMIN DASHBOARD
+// LOGOUT FUNCTION
+// ============================================================
+
+async function logoutAdmin() {
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/api/admin/logout`,
+                {
+                    method: "POST",
+                    credentials: "include"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            console.error(
+                "Logout request failed."
+            );
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Logout Error:",
+            error
+        );
+
+    }
+
+
+    isAdminLoggedIn =
+        false;
+
+
+    sessionStorage.removeItem(
+        "queuelessAdminLoggedIn"
+    );
+
+
+    adminDashboard.classList.remove(
+        "active"
+    );
+
+
+    window.scrollTo({
+
+        top: 0,
+
+        behavior: "smooth"
+
+    });
+
+}
+
+
+// ============================================================
+// LOGOUT BUTTON
+// ============================================================
+
+if (adminLogout) {
+
+    adminLogout.addEventListener(
+        "click",
+        async function () {
+
+            await logoutAdmin();
+
+        }
+    );
+
+}
+
+
+// ============================================================
+// BACK TO WEBSITE
 // ============================================================
 
 if (adminClose) {
 
     adminClose.addEventListener(
         "click",
-        function () {
+        async function () {
 
-            adminDashboard.classList.remove(
-                "active"
-            );
-
-
-            window.scrollTo({
-
-                top: 0,
-
-                behavior: "smooth"
-
-            });
+            await logoutAdmin();
 
         }
     );
@@ -794,57 +1390,52 @@ function updateAdminDashboard() {
     }
 
 
-    // ========================================================
-    // H'S CLINIC ONLY
-    // ========================================================
+    createBusinessSelector();
 
-    const clinicQueue =
+
+    const businessQueue =
         queue.filter(function (person) {
 
-            return person.business === "H's Clinic";
+            return (
+                person.business ===
+                selectedBusiness
+            );
 
         });
 
-
-    // ========================================================
-    // WAITING
-    // ========================================================
 
     const waitingCustomers =
-        clinicQueue.filter(function (person) {
+        businessQueue.filter(function (person) {
 
-            return person.status === "waiting";
+            return (
+                person.status ===
+                "waiting"
+            );
 
         });
 
-
-    // ========================================================
-    // SERVING
-    // ========================================================
 
     const servingCustomer =
-        clinicQueue.find(function (person) {
+        businessQueue.find(function (person) {
 
-            return person.status === "serving";
+            return (
+                person.status ===
+                "serving"
+            );
 
         });
 
-
-    // ========================================================
-    // COMPLETED
-    // ========================================================
 
     const completedCustomers =
-        clinicQueue.filter(function (person) {
+        businessQueue.filter(function (person) {
 
-            return person.status === "completed";
+            return (
+                person.status ===
+                "completed"
+            );
 
         });
 
-
-    // ========================================================
-    // UPDATE COUNTERS
-    // ========================================================
 
     waitingCount.textContent =
         waitingCustomers.length;
@@ -855,7 +1446,7 @@ function updateAdminDashboard() {
 
 
     // ========================================================
-    // UPDATE SERVING NUMBER
+    // CURRENT SERVING CUSTOMER
     // ========================================================
 
     if (servingCustomer) {
@@ -892,15 +1483,47 @@ function updateAdminDashboard() {
 
 
     // ========================================================
+    // UPDATE BUSINESS TITLE
+    // ========================================================
+
+    const adminBusinessTitle =
+        document.querySelector(
+            ".admin-controls h3"
+        );
+
+
+    if (adminBusinessTitle) {
+
+        adminBusinessTitle.textContent =
+            selectedBusiness;
+
+    }
+
+
+    const adminBusinessDescription =
+        document.querySelector(
+            ".admin-controls p"
+        );
+
+
+    if (adminBusinessDescription) {
+
+        adminBusinessDescription.textContent =
+            `Manage today's customer queue for ${selectedBusiness}`;
+
+    }
+
+
+    // ========================================================
     // EMPTY QUEUE
     // ========================================================
 
-    if (clinicQueue.length === 0) {
+    if (businessQueue.length === 0) {
 
         adminQueueList.innerHTML = `
 
             <p class="empty-queue">
-                No customers in the queue yet.
+                No customers in ${selectedBusiness} queue yet.
             </p>
 
         `;
@@ -914,17 +1537,20 @@ function updateAdminDashboard() {
     // CLEAR LIST
     // ========================================================
 
-    adminQueueList.innerHTML = "";
+    adminQueueList.innerHTML =
+        "";
 
 
     // ========================================================
-    // SORT QUEUE
+    // SORT BY JOIN TIME
     // ========================================================
 
-    clinicQueue.sort(function (a, b) {
+    businessQueue.sort(function (a, b) {
 
-        return new Date(a.joinedAt) -
-               new Date(b.joinedAt);
+        return (
+            new Date(a.joinedAt) -
+            new Date(b.joinedAt)
+        );
 
     });
 
@@ -933,120 +1559,163 @@ function updateAdminDashboard() {
     // DISPLAY CUSTOMERS
     // ========================================================
 
-    clinicQueue.forEach(function (customer) {
+    businessQueue.forEach(
+        function (customer) {
 
-        const customerRow =
-            document.createElement("div");
-
-
-        customerRow.className =
-            "customer-row";
+            const customerRow =
+                document.createElement("div");
 
 
-        // ====================================================
-        // QUEUE NUMBER
-        // ====================================================
-
-        const number =
-            document.createElement("strong");
+            customerRow.className =
+                "customer-row";
 
 
-        number.textContent =
-            customer.queueNumber;
+            const number =
+                document.createElement("strong");
 
 
-        // ====================================================
-        // CUSTOMER NAME
-        // ====================================================
-
-        const name =
-            document.createElement("span");
+            number.textContent =
+                customer.queueNumber;
 
 
-        name.textContent =
-            customer.name;
+            const name =
+                document.createElement("span");
 
 
-        // ====================================================
-        // STATUS
-        // ====================================================
-
-        const status =
-            document.createElement("span");
+            name.textContent =
+                customer.name;
 
 
-        status.className =
-            "customer-status";
+            const status =
+                document.createElement("span");
 
 
-        if (customer.status === "waiting") {
-
-            status.textContent =
-                "Waiting";
+            status.className =
+                "customer-status";
 
 
-            status.classList.add(
-                "status-waiting"
+            // ==================================================
+            // STATUS
+            // ==================================================
+
+            if (
+                customer.status ===
+                "waiting"
+            ) {
+
+                status.textContent =
+                    "Waiting";
+
+
+                status.classList.add(
+                    "status-waiting"
+                );
+
+            }
+
+            else if (
+                customer.status ===
+                "serving"
+            ) {
+
+                status.textContent =
+                    "Now Serving";
+
+
+                status.classList.add(
+                    "status-serving"
+                );
+
+            }
+
+            else if (
+                customer.status ===
+                "completed"
+            ) {
+
+                status.textContent =
+                    "Completed";
+
+
+                status.classList.add(
+                    "status-completed"
+                );
+
+            }
+
+            else if (
+                customer.status ===
+                "left"
+            ) {
+
+                status.textContent =
+                    "Left";
+
+            }
+
+
+            customerRow.appendChild(
+                number
+            );
+
+
+            customerRow.appendChild(
+                name
+            );
+
+
+            customerRow.appendChild(
+                status
+            );
+
+
+            // ==================================================
+            // COMPLETE BUTTON
+            // ==================================================
+
+            if (
+                customer.status ===
+                "serving"
+            ) {
+
+                const completeButton =
+                    document.createElement("button");
+
+
+                completeButton.className =
+                    "complete-customer-btn";
+
+
+                completeButton.textContent =
+                    "Complete";
+
+
+                completeButton.addEventListener(
+                    "click",
+                    function () {
+
+                        completeCustomer(
+                            customer.id
+                        );
+
+                    }
+                );
+
+
+                customerRow.appendChild(
+                    completeButton
+                );
+
+            }
+
+
+            adminQueueList.appendChild(
+                customerRow
             );
 
         }
+    );
 
-
-        else if (customer.status === "serving") {
-
-            status.textContent =
-                "Now Serving";
-
-
-            status.classList.add(
-                "status-serving"
-            );
-
-        }
-
-
-        else {
-
-            status.textContent =
-                "Completed";
-
-
-            status.classList.add(
-                "status-completed"
-            );
-
-        }
-
-
-        // ====================================================
-        // ADD ELEMENTS
-        // ====================================================
-
-        customerRow.appendChild(
-            number
-        );
-
-
-        customerRow.appendChild(
-            name
-        );
-
-
-        customerRow.appendChild(
-            status
-        );
-
-
-        adminQueueList.appendChild(
-            customerRow
-        );
-
-    });
-
-
-    // ========================================================
-    // UPDATE CUSTOMER TICKET
-    // ========================================================
 
     updateCustomerTicket();
 
@@ -1054,28 +1723,80 @@ function updateAdminDashboard() {
 
 
 // ============================================================
-// CALL NEXT CUSTOMER
+// COMPLETE CUSTOMER
+// ============================================================
+
+async function completeCustomer(customerId) {
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/api/queue/${customerId}/complete`,
+                {
+                    method: "POST",
+                    credentials: "include"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            alert(
+                data.error ||
+                "Unable to complete customer."
+            );
+
+            return;
+
+        }
+
+
+        await loadQueueFromBackend();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Complete Customer Error:",
+            error
+        );
+
+
+        alert(
+            "Unable to connect to QueueLess server."
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// CALL NEXT / FINISH CURRENT CUSTOMER
 // ============================================================
 
 if (callNextButton) {
 
     callNextButton.addEventListener(
         "click",
-        function () {
-
-
-            // ==================================================
-            // FIND CURRENT SERVING CUSTOMER
-            // ==================================================
+        async function () {
 
             const servingCustomer =
                 queue.find(function (person) {
 
                     return (
 
-                        person.business === "H's Clinic" &&
+                        person.business ===
+                        selectedBusiness &&
 
-                        person.status === "serving"
+                        person.status ===
+                        "serving"
 
                     );
 
@@ -1088,51 +1809,57 @@ if (callNextButton) {
 
             if (servingCustomer) {
 
-                servingCustomer.status =
-                    "completed";
+                try {
+
+                    const response =
+                        await fetch(
+                            `${API_URL}/api/queue/${servingCustomer.id}/complete`,
+                            {
+                                method: "POST",
+                                credentials: "include"
+                            }
+                        );
 
 
-                saveQueue();
+                    const data =
+                        await response.json();
 
 
-                updateAdminDashboard();
+                    if (!response.ok) {
+
+                        alert(
+                            data.error ||
+                            "Unable to finish current customer."
+                        );
+
+                        return;
+
+                    }
 
 
-                updateCustomerTicket();
-
-
-                return;
-
-            }
-
-
-            // ==================================================
-            // FIND NEXT WAITING CUSTOMER
-            // ==================================================
-
-            const nextCustomer =
-                queue.find(function (person) {
-
-                    return (
-
-                        person.business === "H's Clinic" &&
-
-                        person.status === "waiting"
-
+                    alert(
+                        `${servingCustomer.queueNumber} - ${servingCustomer.name} has completed service.`
                     );
 
-                });
+
+                    await loadQueueFromBackend();
+
+                }
+
+                catch (error) {
+
+                    console.error(
+                        "Finish Customer Error:",
+                        error
+                    );
 
 
-            // ==================================================
-            // NO CUSTOMER
-            // ==================================================
+                    alert(
+                        "Unable to connect to QueueLess server."
+                    );
 
-            if (!nextCustomer) {
+                }
 
-                alert(
-                    "There are no customers waiting."
-                );
 
                 return;
 
@@ -1140,43 +1867,84 @@ if (callNextButton) {
 
 
             // ==================================================
-            // MOVE TO SERVING
+            // CALL NEXT CUSTOMER
             // ==================================================
 
-            nextCustomer.status =
-                "serving";
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}/api/queue/next`,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            credentials:
+                                "include",
+
+                            body: JSON.stringify({
+
+                                business:
+                                    selectedBusiness
+
+                            })
+
+                        }
+                    );
 
 
-            // ==================================================
-            // SAVE
-            // ==================================================
-
-            saveQueue();
+                const data =
+                    await response.json();
 
 
-            // ==================================================
-            // UPDATE ADMIN
-            // ==================================================
+                if (!response.ok) {
 
-            updateAdminDashboard();
+                    alert(
+                        data.error ||
+                        "Unable to call next customer."
+                    );
 
+                    return;
 
-            // ==================================================
-            // UPDATE CUSTOMER TICKET
-            // ==================================================
-
-            updateCustomerTicket();
+                }
 
 
-            // ==================================================
-            // NOTIFY ADMIN
-            // ==================================================
+                await loadQueueFromBackend();
 
-            alert(
 
-                `${nextCustomer.queueNumber} - ${nextCustomer.name} is now being served.`
+                const queueNumber =
+                    data.queue_number_text ||
+                    (
+                        "A" +
+                        String(
+                            data.queue_number
+                        ).padStart(2, "0")
+                    );
 
-            );
+
+                alert(
+                    `${queueNumber} - ${data.name} is now being served.`
+                );
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Call Next Error:",
+                    error
+                );
+
+
+                alert(
+                    "Unable to connect to QueueLess server."
+                );
+
+            }
 
         }
     );
@@ -1188,32 +1956,23 @@ if (callNextButton) {
 // AUTO REFRESH
 // ============================================================
 
-setInterval(function () {
+setInterval(
+    function () {
 
-    queue =
-        JSON.parse(
-            localStorage.getItem("queuelessQueue")
-        ) || [];
+        loadQueueFromBackend();
 
-
-    updateCustomerTicket();
-
-
-    if (
-        adminDashboard &&
-        adminDashboard.classList.contains("active")
-    ) {
-
-        updateAdminDashboard();
-
-    }
-
-}, 2000);
+    },
+    2000
+);
 
 
 // ============================================================
 // INITIAL LOAD
 // ============================================================
+
+loadQueueFromBackend();
+
+createBusinessSelector();
 
 updateAdminDashboard();
 
